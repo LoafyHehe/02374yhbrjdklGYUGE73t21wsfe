@@ -1483,14 +1483,31 @@ function xUNC:checkDebugger()
     return debuggerPresent
 end
 
-function xUNC:checkTampering()
-    local scriptHash = "your_script_hash_here"
-    local currentHash = game:GetService("HashService"):ComputeMD5Async(script.Source)
-    if currentHash ~= scriptHash then
-        warn("⚠️ Script has been tampered with! Hash mismatch.")
+local function VerifyScript()
+    local expectedURL = "https://raw.githubusercontent.com/LoafyHehe/02374yhbrjdklGYUGE73t21wsfe/main/xUNC.luau"
+    local success, liveScript =
+        pcall(
+        function()
+            return game:HttpGet(expectedURL, true)
+        end
+    )
+
+    if not success then
+        warn("⚠️ Could not verify script (HTTP failed). Continuing anyway...")
+        return true
+    end
+
+    if liveScript ~= script.Source then
+        warn("❌ CRITICAL: Script does not match GitHub version! Possible tampering.")
+        script:Destroy()
         return false
     end
+
     return true
+end
+
+if not VerifyScript() then
+    return
 end
 
 function xUNC:rateLevel(
